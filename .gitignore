@@ -1,0 +1,92 @@
+# System files
+# ------------
+Icon
+.DS_Store
+
+# Temporary files
+# ---------------
+/storage/*.key
+
+# Installation files
+# ---------------
+pnpm-lock.yaml
+/vendor
+/kirby
+/site/config/vite.config.php
+/site/config/retour.yml
+
+# Editors
+# (sensitive workspace files)
+# ---------------------------
+*.sublime-workspace
+/.vscode/*
+!/.vscode/extensions.json
+/.idea
+
+# License
+# ---------------
+/site/config/.license
+
+# Contents
+# --------
+/content/*
+
+# Frontend
+# --------
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+logs
+*.log
+node_modules
+dist
+!public/assets/dist
+.dev
+content/home/.lock
+.vite
+
+# CS Fixer
+# --------
+.php-cs-fixer.cache
+site/logs/retour
+cghooks.lock
+
+
+# Env
+# ---------------
+.env
+
+# Temporary files
+# ---------------
+/media/*
+!/media/.gitkeep
+/public/backups
+
+# Build assets
+# ---------------
+/public/media
+/public/assets/dev
+/public/dist
+
+# Kirby
+# ---------------
+# Storage
+/storage/sessions/*
+!/storage/sessions/.gitkeep
+/storage/cache/*
+!/storage/cache/.gitkeep
+/storage/accounts/*
+!/storage/accounts/.gitkeep
+/storage/content/*
+!/storage/content/.gitkeep
+/storage/.license
+
+/site/plugins/kirby-seo
+/site/plugins/kirby-vite
+
+/site/plugins/project-*/vendor/**/.*

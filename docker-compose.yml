@@ -1,0 +1,38 @@
+version: "3"
+services:
+  php:
+    build:
+      context: ./docker/php
+      args:
+        TIME_ZONE: "Europe/Berlin"
+    user: 1000:1000
+    environment:
+      # See https://xdebug.org/docs/all_settings#mode
+      XDEBUG_MODE: "${XDEBUG_MODE:-off}"
+    ports:
+      - 9000:9000
+    volumes:
+      - ./:/var/www/html/
+    networks:
+      - kirby
+  httpd:
+    build:
+      context: "./docker/httpd/"
+    depends_on:
+      - php
+    ports:
+      - 8000:80
+    volumes:
+      - ./:/var/www/html/:ro
+    networks:
+      - kirby
+  mailhog:
+    image: axllent/mailpit:latest
+    ports:
+      - 1025:1025
+      - 8025:8025
+    networks:
+      - kirby
+networks:
+  kirby:
+    driver: bridge

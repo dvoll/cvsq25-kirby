@@ -1,0 +1,36 @@
+title: Site
+blueprint: site
+tabs:
+  main:
+    icon: page
+    label: Navigation
+    columns:
+      - width: 2/3
+        sections:
+          pages:
+            label: pages
+            type: pages
+            info: '/{{ page.slug }}'
+            create:
+              - layout
+            templates:
+              - home
+              - error
+              - layout
+            image: icon
+      - width: 2/3
+        sections:
+          images:
+            label: Bilder
+            type: pages
+            info: '/{{ page.slug }}'
+            templates:
+              - images
+            image: icon
+  seo:
+    label: SEO-Voreinstellungen
+    extends: seo/site
+
+  global: tabs/global-settings
+
+  admin: programmatic/admin-tools

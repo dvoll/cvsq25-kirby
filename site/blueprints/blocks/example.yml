@@ -1,0 +1,17 @@
+title: Example
+icon: text-left
+preview: fields
+wysiwyg: true
+blueprint: page
+
+tabs:
+  content:
+    label: Inhalt
+    fields:
+      headline:
+        label: Überschrift
+        type: writer
+        inline: true
+        marks: false
+        width: 1/3
+  advanced: tabs/blocks-advanced

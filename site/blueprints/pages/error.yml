@@ -1,0 +1,7 @@
+blueprint: page
+
+extends: pages/home
+
+title: error
+image:
+  icon: cancel
