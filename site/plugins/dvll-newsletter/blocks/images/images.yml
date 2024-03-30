@@ -1,0 +1,36 @@
+name: Bilder in Reihe
+icon: dashboard
+preview: gallery
+fields:
+  images:
+    label: field.blocks.gallery.images.label
+    type: files
+    query: model.images
+    multiple: true
+    layout: cards
+    size: small
+    empty: field.blocks.gallery.images.empty
+    uploads:
+      template: blocks/mail-image
+    image:
+      ratio: 1/1
+  caption:
+    label: field.blocks.image.caption
+    type: writer
+    icon: text
+    inline: true
+  ratio:
+    label: field.blocks.image.ratio
+    type: select
+    placeholder: Auto
+    width: 1/2
+    options:
+      1/1: "1:1"
+      4/3: "4:3"
+      3/4: "3:4"
+      2/3: "2:3"
+      3/2: "3:2"
+  crop:
+    label: field.blocks.image.crop
+    type: toggle
+    width: 1/2

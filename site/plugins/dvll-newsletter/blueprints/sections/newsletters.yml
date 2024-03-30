@@ -1,0 +1,8 @@
+type: pages
+image: false
+templates:
+  - newsletter
+  - newsletter-sent
+  # - default
+empty: Noch keine Newsletter vorhanden
+sortBy: date desc

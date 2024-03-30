@@ -1,0 +1,13 @@
+blueprint: page
+
+title: Newsletter
+
+icon: ✉️
+
+create:
+  slug: "nl-{{ site.unixTimestamp }}"
+
+extends: layouts/newsletter
+
+tabs:
+  report: false

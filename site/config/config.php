@@ -41,10 +41,12 @@ return [
     'panel.menu' => fn () => [
         'site' => Menu::site('Website'),
         '-',
-        'images' => Menu::page('Bilder', 'images', page('page://images')),
+        'newsletters' => Menu::page('Newsletter', 'email', page('newsletters')),
         '-',
+        'images' => Menu::page('Bilder', 'images', page('page://images')),
         'users',
-        'retour'
+        '-',
+        'system',
     ],
     'ready' => fn () => [
         'panel' => [

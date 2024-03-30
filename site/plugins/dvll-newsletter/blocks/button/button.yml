@@ -1,0 +1,9 @@
+name: Button
+icon: open
+wysiwyg: true
+preview: fields
+fields:
+  label:
+    type: text
+  url:
+    type: url

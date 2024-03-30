@@ -1,0 +1,51 @@
+title: Sent Newsletter
+
+icon: 📤
+
+extends: layouts/newsletter
+
+options:
+  changeTemplate:
+    - newsletter-sent
+    - newsletter
+
+
+tabs:
+  settings: false
+  content:
+    sections:
+      actions: false
+      content:
+        fields:
+          testRecipients: false
+          audience:
+            disabled: true
+          subject:
+            disabled: true
+          message:
+            disabled: true
+
+
+# fields:
+
+#   newsletter: false
+
+#   sentDate:
+#     type: date
+#     disabled: true
+#     label: Sent
+#     default: now
+#     step: 1
+#     time:
+#       display: HH:mm
+
+#   # to: false
+
+#   subject:
+#     disabled: true
+
+#   message:
+#     disabled: true
+
+#   log:
+#     disabled: true
