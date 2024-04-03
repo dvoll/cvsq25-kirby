@@ -23,8 +23,8 @@ return [
             'type' => 'smtp',
             'host' => getenv("KIRBY_MAIL_HOST"),
             'port' => json_decode(getenv("KIRBY_MAIL_PORT")),
-            'security' => true,
-            'auth' => 'tls',
+            'security' => json_decode(getenv('KIRBY_MAIL_SECURITY')),
+            'auth' => json_decode(getenv('KIRBY_MAIL_AUTH')),
             'username' => getenv("KIRBY_MAIL_USER"),
             'password' => getenv("KIRBY_MAIL_PASS")
         ]
