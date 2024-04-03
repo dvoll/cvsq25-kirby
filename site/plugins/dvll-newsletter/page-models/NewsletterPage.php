@@ -41,7 +41,7 @@ class NewsletterPage extends Page
     public function logoSrc($isEmail = false) {
         if (!$isEmail) {
             /** @var \Kirby\Filesystem\File $image */
-            $image = asset('assets/newsletter-logo.png');
+            $image = asset('assets/newsletter/newsletter-logo.png');
             return $image->url();
         }
         return 'cid:logo';
