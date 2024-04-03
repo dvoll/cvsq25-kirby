@@ -13,17 +13,24 @@ options:
 tabs:
   settings: false
   content:
-    sections:
-      actions: false
-      content:
+    columns:
+      ctrlCol: false
+      contentCol:
+        sections:
+          content:
+            fields:
+              testRecipients: false
+              audience:
+                disabled: true
+              subject:
+                disabled: true
+              message:
+                disabled: true
+      sidebar:
         fields:
-          testRecipients: false
-          audience:
+          files:
             disabled: true
-          subject:
-            disabled: true
-          message:
-            disabled: true
+          infoPlaceholder: false
 
 
 # fields:

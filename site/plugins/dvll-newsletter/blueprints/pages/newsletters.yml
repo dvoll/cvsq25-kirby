@@ -9,6 +9,7 @@ options:
 tabs:
   content:
     icon: dashboard
+    label: Inhalt
     columns:
       - width: 1/2
         sections:
@@ -22,19 +23,19 @@ tabs:
         sections:
           listed:
             extends: sections/newsletters
-            headline: Archive
+            headline: Archiv
             status: listed
             info: "{{ page.sentDate.toDate('Y-m-d H:i') }}"
             sortBy: sentDate desc
 
   subscriber:
-    label: Subscriber
+    label: Abonnenten
     icon: users
     fields:
       headerSubscriber:
-        label: Abonennten
+        label: Abonnenten
         type: headline
-        help: Hier können Abonennten mit Name und Zielgruppe abgelegt werden.
+        help: Hier können Abonnenten mit Name und Zielgruppe abgelegt werden.
       subscribers:
         label: Subscribers
         type: structure
@@ -65,7 +66,7 @@ tabs:
               value: "{{ item.id }}"
 
   globals:
-    label: Global Settings
+    label: Globale Einstellungen
     icon: globe
     columns:
       main:
@@ -75,15 +76,19 @@ tabs:
           headerTargets:
             label: Zielgruppen
             type: headline
-            help: Hier abgelegte Gruppen können als Zielgruppe in der Abonenntenliste ausgewählt werden.
+            help: Hier abgelegte Gruppen können als Zielgruppe in der Abonnentenliste ausgewählt werden.
           subscriberCategories:
-            label: Gruppen von Abonennten
+            label: Gruppen von Abonnenten
             type: structure
+            columns:
+              name:
+                width: 1/2
             fields:
               id:
                 label: ID
                 type: number
                 required: true
+                help: Eindeutige ID für die Gruppe (z.B. aufsteigende Nummer)
               name:
                 label: Name
                 type: text

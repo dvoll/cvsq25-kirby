@@ -42,65 +42,80 @@ tabs:
 
   content:
     label: Inhalt
-    sections:
-      actions:
-        type: newsletter-action
-        label: "{{ page.subject }}"
-      content:
-        type: fields
+    columns:
+      ctrlCol:
+        width: 2/3
+        sections:
+          actions:
+            type: newsletter-action
+          test:
+            type: fields
+            fields:
+              testRecipients:
+                label: Test-Empfänger
+                help: Mehrere E-Mail Adressen können mit Komma getrennt eingetragen werden
+                type: text
+                pattern: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}([,][a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})*$
+                icon: email
+      headerCol:
+        width: 2/3
+        sections:
+          header:
+            type: fields
+            fields:
+              headerContent:
+                label: Inhalt
+                type: headline
+      contentCol:
+        width: 2/3
+        sections:
+          content:
+            type: fields
+            fields:
+
+              audience:
+                label: Empfänger
+                type: multiselect
+                min: 1
+                options:
+                  type: query
+                  query: page.parent.subscriberCategories.toStructure
+                  text: "{{ item.name }}"
+                  value: "{{ item.id }}"
+
+              subject:
+                label: Betreff
+                type: text
+                required: true
+                default: "Newsletter"
+              message:
+                label: Nachricht
+                type: blocks
+                min: 1
+                required: true
+                fieldsets:
+                  - mail-heading
+                  - mail-text
+                  - mail-image
+                  - mail-images
+                  - mail-button
+                  - mail-list
+                  - mail-line
+                default:
+                  - type: mail-heading
+                    content:
+                      text: Newsletter
+                      level: h1
+                  - type: mail-text
+                    content:
+                      text: <p>Inhalt des Newsletters</p>
+      sidebar:
+        width: 1/3
         fields:
-          testRecipients:
-            width: 2/3
-            label: Test-Empfänger
-            help: Mehrere E-Mail Adressen können mit Komma getrennt eingetragen werden
-            type: text
-            icon: email
-
-          headerContent:
-            label: Inhalt
-            type: headline
-
-          audience:
-            width: 2/3
-            label: Empfänger
-            type: multiselect
-            min: 1
-            options:
-              type: query
-              query: page.parent.subscriberCategories.toStructure
-              text: "{{ item.name }}"
-              value: "{{ item.id }}"
-
-          subject:
-            label: Betreff
-            width: 2/3
-            type: text
-            required: true
-            default: "Newsletter"
-
-          message:
-            label: Nachricht
-            type: blocks
-            width: 2/3
-            min: 1
-            required: true
-            fieldsets:
-              - mail-heading
-              - mail-text
-              - mail-image
-              - mail-images
-              - mail-button
-              - mail-list
-              - mail-line
-            default:
-              - type: mail-heading
-                content:
-                  text: Newsletter
-                  level: h1
-              - type: mail-text
-                content:
-                  text: <p>Inhalt des Newsletters</p>
-
+          files:
+            type: files
+            label: Anhänge
+            help: Wenn überhaupt Anhänge benutzt werden, sollten diese möglichst klein sein.
           infoPlaceholder:
             width: 1/3
             label: Platzhalter
@@ -109,9 +124,9 @@ tabs:
             text: |
               Folgende Platzhalter können in den Blöcken der Nachricht genutzt werden:
 
-              - Vorname: <span style="font-family: monospace">{{ vorname &#125;&#125;<span />
-              - Nachname: <span style="font-family: monospace">{{ nachname &#125;&#125;<span />
-              - E-Mail-Adresse: <span style="font-family: monospace">{{ email &#125;&#125;<span />
+              - Vorname: <span style="font-family: monospace; white-space: nowrap;">{{ vorname &#125;&#125;<span />
+              - Nachname: <span style="font-family: monospace; white-space: nowrap;">{{ nachname &#125;&#125;<span />
+              - E-Mail-Adresse: <span style="font-family: monospace; white-space: nowrap;">{{ email &#125;&#125;<span />
 
   # settings:
   #   label: Einstellungen

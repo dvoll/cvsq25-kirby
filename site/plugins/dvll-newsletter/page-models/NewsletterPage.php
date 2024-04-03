@@ -124,7 +124,7 @@ class NewsletterPage extends Page
                 $name = $recipient['name'];
                 $trackingUrl = $this->trackingUrl(bin2hex(random_bytes(8)), $test);
 
-                $results[] = NewsletterService::sendSingleMail($this, $from, $to, $subject, $message, $firstName, $name, [], $trackingUrl);
+                $results[] = NewsletterService::sendSingleMail($this, $from, $to, $subject, $message, $firstName, $name, $this->files()->data(), $trackingUrl);
             }
         } catch (\Exception $e) {
             $log = $e->getMessage();
@@ -158,7 +158,7 @@ class NewsletterPage extends Page
                 'results' => Data::encode($results, 'yaml'),
             ]);
         }
-        if (count($resultsSuccessful) < 0) {
+        if (count($resultsSuccessful) <= 0) {
             $this->update([
                 'log' => $log,
             ]);
