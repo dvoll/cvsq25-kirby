@@ -74,7 +74,6 @@ export default {
           submit: () => {
             this.sendNewsletter();
           },
-          close: () => console.log('closed'),
         }
       });
     },
@@ -112,7 +111,7 @@ export default {
         })
         .catch(error => {
           this.sendingTest = false;
-          console.error(error.message);
+          console.error(error);
           this.$panel.notification.error(error);
         })
     },
@@ -134,16 +133,12 @@ export default {
             return;
           }
 
-          if (response.data.errorDelivery > 0) {
-            this.$panel.notification.error('Beim Senden an einzelne Empfänger ist ein Problem aufgetreten.');
-            return;
-          }
-
           this.$panel.dialog.close();
           this.$panel.reload();
         })
         .catch(error => {
           this.$panel.dialog.isLoading = false;
+          console.error(error);
           this.$panel.notification.error(error);
         })
     }
