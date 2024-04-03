@@ -6,7 +6,7 @@
           Testmail senden
         </k-button>
         <k-button @click="onSend" variant="filled" :disabled="!canSend" icon="plane">
-          Newsletter abschicken
+          Newsletter versenden
         </k-button>
       </k-button-group>
     </k-bar>
@@ -20,6 +20,7 @@ export default {
       status: 'loading',
       id: undefined,
       sendingTest: false,
+      errorDetailsList: [],
     }
   },
   computed: {
@@ -41,14 +42,33 @@ export default {
   },
   methods: {
     onSend() {
+      if (this.$store.getters['content/hasChanges']()) {
+        this.$panel.notification.error('Änderungen müssen vor dem Senden gespeichert oder verworfen werden.');
+        return;
+      }
+
+      this.$api.get(`${this.id}/check-send`)
+        .then(response => {
+          this.openDialog(response.data);
+        })
+        .catch(error => {
+          this.$panel.notification.error(error);
+      });
+      return;
+    },
+    openDialog(recipients = []) {
       this.$panel.dialog.open({
-        component: 'k-text-dialog',
+        component: 'k-newsletter-send-dialog',
         props: {
+          id: this.id,
+          errorDetailsList: this.errorDetailsList,
+          recipients: recipients.map(r => ({
+            email: r.email,
+            firstname: r.firstname,
+            name: r.name,
+          })),
+          canSubmit: recipients.length > 0,
           text: 'Den Newsletter an wirklich an alle Abonnenten senden?',
-          submitButton: {
-            text: 'Absenden',
-            color: 'orange'
-          },
         },
         on: {
           submit: () => {
@@ -59,17 +79,22 @@ export default {
       });
     },
     onSendTest() {
+      if (this.$store.getters['content/hasChanges']()) {
+        this.$panel.notification.error('Änderungen müssen vor dem Senden gespeichert oder verworfen werden.');
+        return;
+      }
+
       this.sendTestNewsletter();
     },
     sendTestNewsletter() {
       if (!this.id) {
-        this.$panel.notification.error('No newsletter found');
+        this.$panel.notification.error('Kein Newsletter zum versenden gefunden.');
         return;
       };
 
       this.sendingTest = true;
 
-      this.$api.get(`${this.id}/send/1`)
+      this.$api.post(`${this.id}/send/1`)
         .then(response => {
           this.sendingTest = false;
 
@@ -88,7 +113,7 @@ export default {
         .catch(error => {
           this.sendingTest = false;
           console.error(error.message);
-          this.$panel.notification.error(error.message);
+          this.$panel.notification.error(error);
         })
     },
     sendNewsletter() {
@@ -99,7 +124,7 @@ export default {
 
       this.$panel.dialog.isLoading = true;
 
-      this.$api.get(`${this.id}/send`)
+      this.$api.post(`${this.id}/send`)
         .then(response => {
           this.$panel.dialog.isLoading = false;
 
@@ -119,8 +144,7 @@ export default {
         })
         .catch(error => {
           this.$panel.dialog.isLoading = false;
-          console.error(error.message);
-          this.$panel.notification.error(error.message);
+          this.$panel.notification.error(error);
         })
     }
   }

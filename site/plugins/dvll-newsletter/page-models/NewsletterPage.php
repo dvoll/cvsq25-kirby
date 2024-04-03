@@ -1,16 +1,14 @@
 <?php
 namespace dvll\Newsletter\PageModels;
 
+use dvll\Newsletter\Classes\NewsletterService;
 use Kirby\Cms\Page;
 use Kirby\Exception\Exception;
-use Kirby\Exception\NotFoundException;
 use Kirby\Data\Data;
 use Kirby\Toolkit\Str;
-use PHPMailer\PHPMailer\PHPMailer;
 
 class NewsletterPage extends Page
 {
-
     private const EMAIL_FROM = 'vorstand@cvjm-stift-quernheim.de';
     private const EMAIL_FROM_NAME = 'CVJM Stift Quernheim e.V.';
 
@@ -95,66 +93,6 @@ class NewsletterPage extends Page
         return $filteredList;
     }
 
-    /**
-     * Summary of sendSingleMail
-     * @param \Kirby\Cms\User $from
-     * @param string $to
-     * @param string $subject
-     * @param \Kirby\Cms\Blocks $message
-     * @param string $firstName
-     * @param string $name
-     * @param array<mixed> $attachments
-     * @param string $trackingUrl
-     * @throws \Kirby\Exception\NotFoundException
-     * @return array{email: string, status: string, statusIcon: string, info: string}
-     */
-    protected function sendSingleMail($from, string $to, string $subject, $message, string $firstName, string $name, array $attachments = [], $trackingUrl = null): array
-    {
-
-        try {
-            kirby()->email([
-                'from' => $from,
-                'replyTo' => $from,
-                'to' => $to,
-                'subject' => $subject,
-                'template' => 'newsletter-mail',
-                'data' => [
-                    'isEmail' => true,
-                    'page' => $this,
-                    'to' => $to,
-                    'recipientTemplateData' => $this->templateData($firstName, $name, $to),
-                    'trackingUrl' => $trackingUrl,
-                ],
-                'attachments' => $attachments,
-                'beforeSend' => /** @param PHPMailer $mailer */ function ($mailer) {
-                    /** @var \Kirby\Filesystem\File $image */
-                    $image = asset('assets/newsletter-logo.png');
-                    $mailer->AddEmbeddedImage($image->root(), 'logo', $image->filename(), PHPMailer::ENCODING_BASE64, $image->mime());
-
-                    return $mailer;
-                }
-            ]);
-
-            $result = [
-                'email' => $to,
-                'status' => 'sent',
-                'statusIcon' => '✔️',
-                'info' => (new \DateTime())->format('d.m.Y H:i:s'),
-            ];
-        } catch (NotFoundException $e) {
-            # Throw new exception if template parts are not found and mail sending should be interrupted
-            throw new NotFoundException($e->getMessage());
-        } catch (\Exception $e) {
-            $result = [
-                'email' => $to,
-                'status' => 'error',
-                'statusIcon' => '❌',
-                'info' => $e->getMessage(),
-            ];
-        }
-
-        return $result;
-    }
 
     /**
      * @param bool $test
@@ -163,42 +101,8 @@ class NewsletterPage extends Page
      */
     public function sendNewsletter(bool $test = false)
     {
-        $errors = $this->errors();
 
-        // handle required fields
-        if (sizeOf($errors) > 0) {
-            throw new Exception([
-                'key' => 'dvll.newsletterFieldsValidation',
-                'httpCode' => 400,
-                'details' => $errors,
-            ]);
-        }
-
-        if ($test) {
-            if (($testRecipientsString = $this->content()->get('testRecipients')) != '') {
-                $recipients = array_map(function ($email) {
-                    return [
-                        'email' => $email,
-                        'firstname' => 'Test-Vorname',
-                        'name' => 'Test-Nachname'
-                    ];
-                }, explode(',', $testRecipientsString));
-            } else {
-                $recipients = [];
-            }
-        } else {
-            $recipients = $this->getSubscribers(
-                explode(',', $this->content()->get('audience'))
-            );
-        }
-
-        if (count($recipients) === 0) {
-            throw new Exception([
-                'key' => 'dvll.newsletterNoRecipients',
-                'fallback' => $test ? 'Keine Testempfänger eingetragen' : 'Keine Empfänger gefunden',
-                'httpCode' => 400,
-            ]);
-        }
+        $recipients = $this->getRecipients($test);
 
         $from = new \Kirby\Cms\User([
             'email' => self::EMAIL_FROM,
@@ -220,7 +124,7 @@ class NewsletterPage extends Page
                 $name = $recipient['name'];
                 $trackingUrl = $this->trackingUrl(bin2hex(random_bytes(8)), $test);
 
-                $results[] = $this->sendSingleMail($from, $to, $subject, $message, $firstName, $name, [], $trackingUrl);
+                $results[] = NewsletterService::sendSingleMail($this, $from, $to, $subject, $message, $firstName, $name, [], $trackingUrl);
             }
         } catch (\Exception $e) {
             $log = $e->getMessage();
@@ -253,9 +157,21 @@ class NewsletterPage extends Page
                 'log' => $log,
                 'results' => Data::encode($results, 'yaml'),
             ]);
-        } else {
+        }
+        if (count($resultsSuccessful) < 0) {
             $this->update([
                 'log' => $log,
+            ]);
+            throw new Exception([
+                'key' => 'dvll.newsletterSendFailure',
+                'fallback' => 'Fehler beim Versenden des Newsletters',
+                'httpCode' => 500,
+                'details' => array_map(function ($result) {
+                    return [
+                        'label' => $result['email'],
+                        'message' => $result['info']
+                    ];
+                }, $resultsWithError)
             ]);
         }
 
@@ -264,6 +180,53 @@ class NewsletterPage extends Page
             'errorDelivery' => count($resultsWithError),
             'message' => $log
         ];
+    }
+    /**
+     * @param bool $test
+     * @throws \Kirby\Exception\Exception
+     * @return array{id: number, categories: string, email: string, firstname: string, name: string}
+     */
+    public function getRecipients(bool $test = false)
+    {
+        $errors = $this->errors();
+
+        // handle required fields
+        if (sizeOf($errors) > 0) {
+            throw new Exception([
+                'key' => 'dvll.newsletterFieldsValidation',
+                'httpCode' => 400,
+                'details' => $errors,
+                'fallback' => 'Der Newsletter ist nicht vollständig und kann daher nicht versendet werden'
+            ]);
+        }
+
+        if ($test) {
+            if (($testRecipientsString = $this->content()->get('testRecipients')) != '') {
+                $recipients = array_map(function ($email) {
+                    return [
+                        'email' => $email,
+                        'firstname' => 'Test-Vorname',
+                        'name' => 'Test-Nachname'
+                    ];
+                }, explode(',', $testRecipientsString));
+            } else {
+                $recipients = [];
+            }
+        } else {
+            $recipients = $this->getSubscribers(
+                explode(',', $this->content()->get('audience'))
+            );
+        }
+
+        if (count($recipients) === 0) {
+            throw new Exception([
+                'key' => 'dvll.newsletterNoRecipients',
+                'fallback' => $test ? 'Keine Test-Empfänger eingetragen' : 'Keine Empfänger gefunden',
+                'httpCode' => 400,
+            ]);
+        }
+
+        return $recipients;
     }
 
 }

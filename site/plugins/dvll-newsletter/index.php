@@ -67,7 +67,7 @@ App::plugin('dvll/newsletter', [
         'routes' => [
             [
                 'pattern' => ['newsletters/(:any)/send', 'newsletters/(:any)/send/(:num)'],
-                'method' => 'GET',
+                'method' => 'POST',
                 'action' => function (string $uid, int $test = 0) {
                     /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
                     $page = kirby()->page('newsletters/' . $uid);
@@ -79,6 +79,28 @@ App::plugin('dvll/newsletter', [
                         'success' => true,
                         'message' => $test ? 'Test erfolgreich gesendet' : 'Newsletter erfolgreich gesendet',
                         'data' => $deliveryData
+                    ];
+                }
+            ],
+            [
+                'pattern' => ['newsletters/(:any)/check-send'],
+                'method' => 'GET',
+                'action' => function (string $uid, int $test = 0) {
+                    /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
+                    $page = kirby()->page('newsletters/' . $uid);
+                    if ($page == null) {
+                        throw new Error('page not found', 404);
+                    }
+                    $recipients = $page->getRecipients(boolval($test));
+                    return [
+                        'success' => true,
+                        'data' => array_map(function ($recipient) {
+                            return [
+                                'email' => $recipient['email'],
+                                'firstname' => $recipient['firstname'],
+                                'name' => $recipient['name']
+                            ];
+                        }, $recipients),
                     ];
                 }
             ],

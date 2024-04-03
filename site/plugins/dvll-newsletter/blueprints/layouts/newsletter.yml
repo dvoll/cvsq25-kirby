@@ -44,7 +44,7 @@ tabs:
         fields:
           testRecipients:
             width: 2/3
-            label: Test Empfänger
+            label: Test-Empfänger
             help: Mehrere E-Mail Adressen können mit Komma getrennt eingetragen werden
             type: text
             icon: email
@@ -100,7 +100,7 @@ tabs:
             type: info
             theme: passive
             text: |
-              Folgende Platzhalter können im Nachrichtentext genutzt werden:
+              Folgende Platzhalter können in den Blöcken der Nachricht genutzt werden:
 
               - Vorname: <span style="font-family: monospace">{{ vorname &#125;&#125;<span />
               - Nachname: <span style="font-family: monospace">{{ nachname &#125;&#125;<span />

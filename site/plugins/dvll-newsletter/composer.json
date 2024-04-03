@@ -11,16 +11,17 @@
 		}
 	],
 	"require": {
-		"getkirby/composer-installer": "^1.1"
+		"getkirby/composer-installer": "^1.2"
 	},
 	"config": {
-		"allow-plugins": {
+        "optimize-autoloader": true,
+        "allow-plugins": {
 			"getkirby/composer-installer": true
 		}
 	},
     "autoload": {
         "psr-4": {
-           "dvll\\Newsletter\\": "classes",
+           "dvll\\Newsletter\\Classes\\": "classes",
            "dvll\\Newsletter\\PageModels\\": "page-models"
         }
     }
