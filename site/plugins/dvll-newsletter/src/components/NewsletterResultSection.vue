@@ -1,13 +1,22 @@
 <template>
   <div style="margin-block: 2rem;">
-    <!-- <k-bar>
-      <k-button-group>
-        <k-button @click="onSendAll" variant="filled" :disabled="!canSendAll"
-          :icon="isSendingAll ? 'loader' : 'refresh'">
-          Fehlgeschlagene E-Mails erneut senden
-        </k-button>
-      </k-button-group>
-    </k-bar> -->
+    <k-stats style="margin-top: 1rem;" :reports="[
+      {
+        value: successReportsLength || '0',
+        label: 'Erfolgreich',
+        icon: 'check',
+        theme: 'positive',
+        info: errorReportsLength <= 0 && 'Alle E-Mails wurden erfolgreich zugestellt.',
+      },
+      {
+        value: errorReportsLength || '0',
+        label: 'Fehlgeschlagen',
+        icon: 'cancel',
+        theme: 'negative',
+        info: errorReportsLength > 0 && 'Es gab Fehler beim Versenden der E-Mails.',
+      },
+    ]" />
+
     <div class="k-table" style="margin-top: 1rem;">
       <table>
         <thead>
@@ -15,7 +24,7 @@
             <th class="k-table-index-column">#</th>
             <th data-mobile="true">E-Mail</th>
             <th>Name</th>
-            <th data-mobile="true" class="k-dvll-nwsl-result-section-status-col">✔️</th>
+            <th data-mobile="true" class="k-dvll-nwsl-result-section-status-col"><k-icon type="alert" /></th>
             <th>Info</th>
             <th data-mobile="true">Aktion</th>
           </tr>
@@ -27,8 +36,10 @@
             </td>
             <td data-mobile="true">{{ item.email }}</td>
             <td>{{ item.name }}</td>
-            <td data-mobile="true" class="k-dvll-nwsl-result-section-status-col">{{ item.statusicon }}</td>
-            <td>{{ item.info }}</td>
+            <td data-mobile="true" class="k-dvll-nwsl-result-section-status-col">
+              <k-icon v-if="item.status === 'error'" type="alert" />
+            </td>
+            <td :class="{ 'k-dvll-nwsl-result-section-error-text': item.status === 'error' }">{{ item.info }}</td>
             <td data-mobile="true">
               <k-button v-if="item.status === 'error'" icon="refresh"
                 :aria-label="`E-Mail erneut an ${item.email} senden`" :title="`E-Mail erneut an '${item.email}' senden`"
@@ -46,22 +57,16 @@ export default {
   data() {
     return {
       id: undefined,
-      // isSendingAll: false,
       /** @type {{[key: string]: string}[]} */
       reports: [],
     };
   },
   computed: {
-    // canSendAll() {
-    //   return this.reports.filter( r => r.status === 'error').length > 0 && !this.isSendingAll;
-    // },
-    options() {
-      return [
-        {
-          text: "Edit",
-          icon: "edit"
-        },
-      ];
+    errorReportsLength() {
+      return this.reports.filter(report => ['error', 'sending'].includes(report.status)).length;
+    },
+    successReportsLength() {
+      return this.reports.filter(report => report.status === 'sent').length;
     },
   },
   created() {
@@ -74,7 +79,8 @@ export default {
     resendSingle(email) {
       this.reports = this.reports.map(report => {
         if (report.email === email) {
-          return { ...report,
+          return {
+            ...report,
             status: 'sending',
             statusicon: '📤',
             info: 'Wird gesendet...',
@@ -82,7 +88,7 @@ export default {
         }
         return report;
       });
-      return this.$api.post(`${this.id}/send-single`, {email: email})
+      return this.$api.post(`${this.id}/send-single`, { email: email })
         .then(response => {
           this.$panel.notification.success(`E-Mail an '${email}'' wurde erfolgreich versendet.`);
 
@@ -128,5 +134,10 @@ export default {
 <style>
 .k-table .k-dvll-nwsl-result-section-status-col {
   width: calc(1.2 * var(--table-row-height)) !important;
+}
+
+.k-dvll-nwsl-result-section-error-text {
+  color: var(--color-negative);
+  font-size: var(--text-xs);
 }
 </style>
