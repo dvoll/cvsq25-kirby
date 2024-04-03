@@ -20,7 +20,7 @@ class NewsletterService
      * @param array<mixed> $attachments
      * @param string $trackingUrl
      * @throws \Kirby\Exception\NotFoundException
-     * @return array{email: string, status: string, statusIcon: string, info: string}
+     * @return array{email: string, status: string, statusicon: string, info: string, name: string}
      */
     public static function sendSingleMail($pageModel, $from, string $to, string $subject, $message, string $firstName, string $name, array $attachments = [], $trackingUrl = null): array
     {
@@ -53,8 +53,9 @@ class NewsletterService
 
             $result = [
                 'email' => $to,
+                'name' => $firstName . ' ' . $name,
                 'status' => 'sent',
-                'statusIcon' => '✔️',
+                'statusicon' => '✔️',
                 'info' => (new \DateTime())->format('d.m.Y H:i:s'),
             ];
         } catch (NotFoundException $e) {
@@ -63,8 +64,9 @@ class NewsletterService
         } catch (\Exception $e) {
             $result = [
                 'email' => $to,
+                'name' => $firstName . ' ' . $name,
                 'status' => 'error',
-                'statusIcon' => '❌',
+                'statusicon' => '❌',
                 'info' => $e->getMessage(),
             ];
         }

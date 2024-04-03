@@ -21,16 +21,23 @@ options:
 tabs:
   report:
     label: Bericht
-    type: fields
-    fields:
-      headerReport:
-        label: Sendungsbericht
-        type: headline
-      results:
-        extends: fields/results
-      log:
-        type: textarea
-        disabled: true
+    sections:
+      header:
+        type: fields
+        fields:
+          headerReport:
+            label: Sendungsbericht
+            type: headline
+      reports:
+        type: newsletter-result
+      result:
+        type: fields
+        fields:
+          results:
+            extends: fields/results
+          log:
+            type: textarea
+            disabled: true
 
 
   content:

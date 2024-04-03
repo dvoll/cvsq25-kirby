@@ -1,8 +1,8 @@
 label: Sendungsstatus
-type: structure
+type: hidden
 disabled: true
 columns:
-  statusIcon:
+  statusicon:
     width: 1/8
     align: right
   email:
@@ -13,13 +13,13 @@ fields:
   email:
     label: E-Mail
     type: text
-  # name:
-  #   label: Name
-  #   type: text
+  name:
+    label: Name
+    type: text
   status:
     label: Status
     type: text
-  statusIcon:
+  statusicon:
     label: Status
     type: text
   info:

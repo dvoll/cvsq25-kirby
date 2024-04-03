@@ -73,7 +73,7 @@ class NewsletterPage extends Page
 
     /**
      * @param string[] $categories
-     * @return array{id: number, categories: string, email: string, firstname: string, name: string}[]
+     * @return array{id: int, categories: string, email: string, firstname: string, name: string}[]
      */
     protected function getSubscribers($categories)
     {
@@ -181,12 +181,99 @@ class NewsletterPage extends Page
             'message' => $log
         ];
     }
-    /**
-     * @param bool $test
-     * @throws \Kirby\Exception\Exception
-     * @return array{id: number, categories: string, email: string, firstname: string, name: string}
-     */
-    public function getRecipients(bool $test = false)
+
+    public function sendSingle($email) {
+        $this->validateNewsletterFields();
+
+        $recipients = $this->getSubscribers(
+            explode(',', $this->content()->get('audience'))
+        );
+
+        $recipient = array_filter($recipients, function($recipient) use ($email) {
+            return $recipient['email'] == $email;
+        });
+
+        // Reset array keys
+        $recipient = array_values($recipient);
+
+        // Check if recipient was found
+        if (empty($recipient)) {
+            throw new Exception([
+                'key' => 'dvll.newsletterRecipientNotFound',
+                'httpCode' => 400,
+                'fallback' => 'Der Empfänger scheint nicht Teil des aktuellen newsletters zu sein.'
+            ]);
+        }
+
+        // Get the first (and only) recipient
+        $recipient = $recipient[0];
+
+        $from = new \Kirby\Cms\User([
+            'email' => self::EMAIL_FROM,
+            'name' => self::EMAIL_FROM_NAME,
+        ]);
+
+        $log = '';
+
+        // @phpstan-ignore-next-line
+        $message = $this->content()->get('message')->toBlocks();
+        $subject = $this->content->get('subject');
+
+        $to = $recipient['email'] ;
+        $firstName = $recipient['firstname'];
+        $name = $recipient['name'];
+        $trackingUrl = $this->trackingUrl(bin2hex(random_bytes(8)));
+
+        $results = $this->content()->get('results')->yaml();
+
+        try {
+            $newResult = NewsletterService::sendSingleMail($this, $from, $to, $subject, $message, $firstName, $name, [], $trackingUrl);
+        } catch (\Exception $e) {
+            $log = $e->getMessage();
+            $this->update([
+                'log' => $log,
+            ]);
+            throw new Exception([
+                'key' => 'dvll.newsletterSendFailure',
+                'fallback' => 'Fehler beim Versenden der Nachricht',
+                'httpCode' => 500,
+                'details' => [
+                    $e->getMessage()
+                ]
+            ]);
+        }
+
+        // update single entry of array $results with email = $to
+        $results = array_map(function ($result) use ($to, $newResult) {
+            if ($result['email'] == $to) {
+                return $newResult;
+            }
+            return $result;
+        }, $results);
+
+        $this->update([
+            'log' => $log,
+            'results' => Data::encode($results, 'yaml'),
+        ]);
+
+        if ($newResult['status'] == 'error') {
+            throw new Exception([
+                'key' => 'dvll.newsletterSendFailure',
+                'fallback' => 'Fehler beim Versenden der Nachricht',
+                'httpCode' => 500,
+                'details' => [
+                    [
+                        'label' => $newResult['email'],
+                        'message' => $newResult['info']
+                    ]
+                ]
+            ]);
+        }
+
+        return $newResult;
+    }
+
+    public function validateNewsletterFields()
     {
         $errors = $this->errors();
 
@@ -199,6 +286,16 @@ class NewsletterPage extends Page
                 'fallback' => 'Der Newsletter ist nicht vollständig und kann daher nicht versendet werden'
             ]);
         }
+    }
+
+    /**
+     * @param bool $test
+     * @throws \Kirby\Exception\Exception
+     * @return array{id: number, categories: string, email: string, firstname: string, name: string}
+     */
+    public function getRecipients(bool $test = false)
+    {
+        $this->validateNewsletterFields();
 
         if ($test) {
             if (($testRecipientsString = $this->content()->get('testRecipients')) != '') {

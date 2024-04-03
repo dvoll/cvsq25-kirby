@@ -9,6 +9,7 @@ use dvll\Newsletter\PageModels\NewslettersPage;
 App::plugin('dvll/newsletter', [
     'sections' => [
         'newsletter-action' => require __DIR__ . '/sections/newsletter-action-section.php',
+        'newsletter-result' => require __DIR__ . '/sections/newsletter-result-section.php',
     ],
     'blueprints' => [
         'pages/newsletters' => __DIR__ . '/blueprints/pages/newsletters.yml',
@@ -72,7 +73,7 @@ App::plugin('dvll/newsletter', [
                     /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
                     $page = kirby()->page('newsletters/' . $uid);
                     if ($page == null) {
-                        throw new Error('page not found', 404);
+                        throw new Error('Seite nicht gefunden', 404);
                     }
                     $deliveryData = $page->sendNewsletter(boolval($test));
                     return [
@@ -83,13 +84,34 @@ App::plugin('dvll/newsletter', [
                 }
             ],
             [
+                'pattern' => ['newsletters/(:any)/send-single'],
+                'method' => 'POST',
+                'action' => function (string $uid) {
+                    if (!$email = get('email')) {
+                        throw new Error('Fehlerhafte Anfrage', 400);
+                    }
+
+                    /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
+                    $page = kirby()->page('newsletters/' . $uid);
+                    if ($page == null) {
+                        throw new Error('Seite nicht gefunden', 404);
+                    }
+                    $result = $page->sendSingle($email);
+                    return [
+                        'success' => true,
+                        'message' => 'Newsletter erfolgreich gesendet',
+                        'data' => $result
+                    ];
+                }
+            ],
+            [
                 'pattern' => ['newsletters/(:any)/check-send'],
                 'method' => 'GET',
                 'action' => function (string $uid, int $test = 0) {
                     /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
                     $page = kirby()->page('newsletters/' . $uid);
                     if ($page == null) {
-                        throw new Error('page not found', 404);
+                        throw new Error('Seite nicht gefunden', 404);
                     }
                     $recipients = $page->getRecipients(boolval($test));
                     return [

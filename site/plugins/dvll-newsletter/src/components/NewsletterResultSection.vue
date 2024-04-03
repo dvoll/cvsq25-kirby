@@ -1,0 +1,132 @@
+<template>
+  <div style="margin-block: 2rem;">
+    <!-- <k-bar>
+      <k-button-group>
+        <k-button @click="onSendAll" variant="filled" :disabled="!canSendAll"
+          :icon="isSendingAll ? 'loader' : 'refresh'">
+          Fehlgeschlagene E-Mails erneut senden
+        </k-button>
+      </k-button-group>
+    </k-bar> -->
+    <div class="k-table" style="margin-top: 1rem;">
+      <table>
+        <thead>
+          <tr>
+            <th class="k-table-index-column">#</th>
+            <th data-mobile="true">E-Mail</th>
+            <th>Name</th>
+            <th data-mobile="true" class="k-dvll-nwsl-result-section-status-col">✔️</th>
+            <th>Info</th>
+            <th data-mobile="true">Aktion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(item, index) in reports" :key="item.email">
+            <td class="k-table-index-column">
+              <span class="k-table-index">{{ index }}</span>
+            </td>
+            <td data-mobile="true">{{ item.email }}</td>
+            <td>{{ item.name }}</td>
+            <td data-mobile="true" class="k-dvll-nwsl-result-section-status-col">{{ item.statusicon }}</td>
+            <td>{{ item.info }}</td>
+            <td data-mobile="true">
+              <k-button v-if="item.status === 'error'" icon="refresh"
+                :aria-label="`E-Mail erneut an ${item.email} senden`" :title="`E-Mail erneut an '${item.email}' senden`"
+                @click="resendSingle(item.email)">Erneut senden</k-button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      id: undefined,
+      // isSendingAll: false,
+      /** @type {{[key: string]: string}[]} */
+      reports: [],
+    };
+  },
+  computed: {
+    // canSendAll() {
+    //   return this.reports.filter( r => r.status === 'error').length > 0 && !this.isSendingAll;
+    // },
+    options() {
+      return [
+        {
+          text: "Edit",
+          icon: "edit"
+        },
+      ];
+    },
+  },
+  created() {
+    this.load().then(response => {
+      this.reports = response.reports;
+      this.id = response.id;
+    });
+  },
+  methods: {
+    resendSingle(email) {
+      this.reports = this.reports.map(report => {
+        if (report.email === email) {
+          return { ...report,
+            status: 'sending',
+            statusicon: '📤',
+            info: 'Wird gesendet...',
+          }
+        }
+        return report;
+      });
+      return this.$api.post(`${this.id}/send-single`, {email: email})
+        .then(response => {
+          this.$panel.notification.success(`E-Mail an '${email}'' wurde erfolgreich versendet.`);
+
+          const {
+            status,
+            statusicon,
+            info,
+          } = response.data;
+
+          this.reports = this.reports.map(report => {
+            if (report.email === email) {
+              return {
+                ...report,
+                status,
+                statusicon,
+                info,
+              }
+            }
+            return report;
+          });
+        })
+        .catch(error => {
+          console.error(error);
+          this.$panel.notification.error(error);
+
+          this.reports = this.reports.map(report => {
+            if (report.email === email) {
+              return {
+                ...report,
+                status: 'error',
+                statusicon: '❌',
+                info: error.details[0]?.message ?? error.message,
+              }
+            }
+            return report;
+          });
+        })
+    },
+  },
+};
+</script>
+
+<style>
+.k-table .k-dvll-nwsl-result-section-status-col {
+  width: calc(1.2 * var(--table-row-height)) !important;
+}
+</style>
