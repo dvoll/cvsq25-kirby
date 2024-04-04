@@ -115,7 +115,7 @@ tabs:
           files:
             type: files
             label: Anhänge
-            help: Wenn überhaupt Anhänge benutzt werden, sollten diese möglichst klein sein.
+            help: Wenn Anhänge verwendet werden, sollten sie so klein wie möglich sein.
           infoPlaceholder:
             width: 1/3
             label: Platzhalter

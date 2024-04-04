@@ -5,13 +5,14 @@ fields:
   images:
     label: field.blocks.gallery.images.label
     type: files
-    query: model.images
+    query: site.find('page://images').images.filterBy('template', 'image')
     multiple: true
     layout: cards
     size: small
     empty: field.blocks.gallery.images.empty
     uploads:
-      template: blocks/mail-image
+      parent: site.find('page://images')
+      template: image
     image:
       ratio: 1/1
   caption:

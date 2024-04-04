@@ -5,12 +5,13 @@ fields:
   image:
     label: field.blocks.image.name
     type: files
-    query: model.images
+    query: site.find('page://images').images.filterBy('template', 'image')
     multiple: false
     image:
       back: black
     uploads:
-      template: blocks/mail-image
+      parent: site.find('page://images')
+      template: image
   alt:
     label: field.blocks.image.alt
     type: text
