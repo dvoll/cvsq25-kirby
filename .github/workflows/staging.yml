@@ -11,12 +11,23 @@ jobs:
     steps:
       - name: Get latest code
         uses: actions/checkout@v4
+
+      - name: Copy file via ssh
+        uses: appleboy/scp-action@v0.1.7
         with:
-          fetch-depth: 2
-      - name: FTP Deployment
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "*,!docker/*,!.vscode/*,!.git/*,!.github/*,!docker-compose.yml"
+          target: ${{ secrets.DEPLOY_SSH_PATH_STAGING }}
+      - name: Executing remote ssh command
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            composer install --no-progress --no-dev --optimize-autoloader
+            php /var/www/html/vendor/bin/kirby scaffold
