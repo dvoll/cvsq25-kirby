@@ -325,7 +325,7 @@
 
                 <!-- 1 Column Content : BEGIN -->
                 <tr>
-                    <td style="background-color: #ffffff;" class="darkmode-bg">
+                    <td style="background-color: #ffffff; padding-bottom: 30px;" class="darkmode-bg">
 
                         <?php /** @var \dvll\Newsletter\PageModels\NewsletterPage $page */ ?>
                         <? foreach ($page->content()->get('message')->toBlocks() as $block): ?>
