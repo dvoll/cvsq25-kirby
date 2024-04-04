@@ -26,5 +26,6 @@ jobs:
           port: ${{ secrets.DEPLOY_SSH_PORT }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            ${{ secrets.DEPLOY_SSH_KEY }} composer install --no-progress --no-dev --optimize-autoloader --working-dir=${{ secrets.DEPLOY_SSH_PATH_STAGING }}
-            php ${{ secrets.DEPLOY_SSH_PATH_STAGING }}/vendor/bin/kirby scaffold
+            cd ${{ secrets.DEPLOY_SSH_PATH_STAGING }}
+            composer install --no-progress --no-dev --optimize-autoloader
+            php ./vendor/bin/kirby scaffold
