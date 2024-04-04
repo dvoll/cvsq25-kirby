@@ -27,5 +27,5 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             cd ${{ secrets.DEPLOY_SSH_PATH_STAGING }}
-            composer install --no-progress --no-dev --optimize-autoloader
-            php ./vendor/bin/kirby scaffold
+            /usr/local/php83/bin/php /cvbin/composer install --no-progress --no-dev --optimize-autoloader
+            /usr/local/php83/bin/php ./vendor/bin/kirby scaffold
