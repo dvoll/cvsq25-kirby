@@ -5,9 +5,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
     steps:
       - name: Get latest code
         uses: actions/checkout@v4
@@ -15,9 +12,9 @@ jobs:
       - name: Copy file via ssh
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          port: ${{ secrets.PORT }}
+          host: ${{ secrets.DEPLOY_SSH_HOST }}
+          username: ${{ secrets.DEPLOY_SSH_USER }}
+          port: ${{ secrets.DEPLOY_SSH_PORT }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           source: "*,!docker/*,!.vscode/*,!.git/*,!.github/*,!docker-compose.yml"
           target: ${{ secrets.DEPLOY_SSH_PATH_STAGING }}
@@ -29,5 +26,5 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
-            composer install --no-progress --no-dev --optimize-autoloader
-            php /var/www/html/vendor/bin/kirby scaffold
+            ${{ secrets.DEPLOY_SSH_KEY }} composer install --no-progress --no-dev --optimize-autoloader --working-dir ${{ secrets.DEPLOY_SSH_PATH_STAGING }}
+            php ${{ secrets.DEPLOY_SSH_PATH_STAGING }}/vendor/bin/kirby scaffold
