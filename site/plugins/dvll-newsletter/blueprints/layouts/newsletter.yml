@@ -104,7 +104,7 @@ tabs:
                 default:
                   - type: mail-heading
                     content:
-                      text: Newsletter
+                      text: Hallo {{ vorname }},
                       level: h1
                   - type: mail-text
                     content:
