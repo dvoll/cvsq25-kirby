@@ -115,7 +115,10 @@ tabs:
           files:
             type: files
             label: Anhänge
-            help: Wenn Anhänge verwendet werden, sollten sie so klein wie möglich sein.
+            help: "Wenn Anhänge verwendet werden, sollten sie so klein wie möglich sein. Erlaubt sind: jpg, png, pdf, doc, docx, xls und xlsx"
+            uploads:
+              template: newsletter-attachment
+
           infoPlaceholder:
             width: 1/3
             label: Platzhalter

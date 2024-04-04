@@ -31,6 +31,8 @@ App::plugin('dvll/newsletter', [
         'blocks/mail-button' => __DIR__ . '/blocks/button/button.yml',
         'blocks/mail-list' => __DIR__ . '/blocks/list/list.yml',
         'blocks/mail-line' => __DIR__ . '/blocks/line/line.yml',
+        # files
+        'files/newsletter-attachment' => __DIR__ . '/blueprints/files/newsletter-attachment.yml',
     ],
     'snippets' => [
         'blocks/mail-heading' => __DIR__ . '/blocks/heading/heading.php',
