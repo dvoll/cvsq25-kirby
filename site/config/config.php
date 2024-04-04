@@ -7,6 +7,9 @@ $dotenv = Dotenv\Dotenv::createUnsafeImmutable(realpath(__DIR__ . '/../../'));
 $dotenv->load();
 
 return [
+    'panel' => [
+        'language' => 'de',
+    ],
     'debug' => json_decode(getenv('KIRBY_DEBUG')),
     'routes' => [],
     'tobimori.seo' => [
@@ -29,15 +32,15 @@ return [
             'password' => getenv("KIRBY_MAIL_PASS")
         ]
     ],
-    // 'auth' => [
-    //     'methods' => ['password', 'password-reset'],
-    //     'challenge' => [
-    //         'email' => [
-    //             'from' => getenv("KIRBY_MAIL_FROM"),
-    //             'subject' => 'Login-Code'
-    //         ]
-    //     ]
-    // ],
+    'auth' => [
+        'methods' => ['password', 'password-reset'],
+        'challenge' => [
+            'email' => [
+                'from' => getenv("KIRBY_MAIL_FROM"),
+                'fromName' => 'CVJM Stift Quernheim e.V.'
+            ]
+        ]
+    ],
     'panel.menu' => fn () => [
         'site' => Menu::site('Website'),
         '-',
