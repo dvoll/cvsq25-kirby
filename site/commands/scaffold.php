@@ -29,11 +29,6 @@ return [
         $root = kirby()->roots()->base();
         $cli->info('Scaffolding kirby-baukasten...');
 
-        if (!F::exists($root . '/.env')) {
-            $cli->info('Copying .env file...');
-            F::copy($root . '/.env.example', $root . '/.env');
-        }
-
         if (!page('home')) {
             $cli->info('Creating empty home page...');
             $page = Page::create([
@@ -51,10 +46,9 @@ return [
                 'template' => 'error',
                 'content' => [],
             ]);
-            $page->changeStatus('listed');
         }
 
-        if (!page('page://images')) {
+        if (!page('images')) {
             $cli->info('Creating images page...');
             $page = Page::create([
                 'slug' => 'images',
@@ -62,6 +56,15 @@ return [
                 'content' => [
                     'uuid' => 'images',
                 ],
+            ]);
+            $page->changeStatus('unlisted');
+        }
+
+        if (!page('newsletters')) {
+            $cli->info('Creating newsletters page...');
+            $page = Page::create([
+                'slug' => 'newsletters',
+                'template' => 'newsletters',
             ]);
             $page->changeStatus('unlisted');
         }
