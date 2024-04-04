@@ -37,7 +37,7 @@ tabs:
         type: headline
         help: Hier können Abonnenten mit Name und Zielgruppe abgelegt werden.
       subscribers:
-        label: Subscribers
+        label: Liste der Abonnenten
         type: structure
         help: Add subscribers to the newsletter
         sortBy: name asc
