@@ -15,10 +15,10 @@
  *
  */
 
-
+import { defineConfig } from 'vite';
 import kirby from 'vite-plugin-kirby'
 
-export default ({ mode }) => ({
+export default defineConfig(({ mode }) => ({
   base: mode === 'development' ? '/' : '/assets/dist/',
 
   build: {
@@ -36,4 +36,4 @@ export default ({ mode }) => ({
       './content/**/*',
     ],
   })],
-});
+}));
