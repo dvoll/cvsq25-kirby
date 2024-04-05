@@ -5,6 +5,7 @@ use Kirby\Cms\App;
 use Kirby\Cms\Page;
 use dvll\Newsletter\PageModels\NewsletterPage;
 use dvll\Newsletter\PageModels\NewslettersPage;
+use Kirby\Exception\Exception;
 
 App::plugin('dvll/newsletter', [
     'sections' => [
@@ -98,24 +99,51 @@ App::plugin('dvll/newsletter', [
                     if ($page == null) {
                         throw new Error('Seite nicht gefunden', 404);
                     }
-                    $result = $page->sendSingle($email);
+                    $deliveryData = $page->sendNewsletter(email: $email);
                     return [
                         'success' => true,
                         'message' => 'Newsletter erfolgreich gesendet',
-                        'data' => $result
+                        'data' => $deliveryData['results'][0]
+                    ];
+                }
+            ],
+            [
+                'pattern' => ['newsletters/(:any)/send-with-errors'],
+                'method' => 'POST',
+                'action' => function (string $uid) {
+                    /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
+                    $page = kirby()->page('newsletters/' . $uid);
+                    if ($page == null) {
+                        throw new Error('Seite nicht gefunden', 404);
+                    }
+                    $deliveryData = $page->sendNewsletter();
+                    return [
+                        'success' => true,
+                        'message' => 'Newsletter erfolgreich gesendet',
+                        'data' => $deliveryData['results']
                     ];
                 }
             ],
             [
                 'pattern' => ['newsletters/(:any)/check-send'],
                 'method' => 'GET',
-                'action' => function (string $uid, int $test = 0) {
+                'action' => function (string $uid) {
                     /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
                     $page = kirby()->page('newsletters/' . $uid);
                     if ($page == null) {
                         throw new Error('Seite nicht gefunden', 404);
                     }
-                    $recipients = $page->getRecipients(boolval($test));
+
+                    $recipients = $page->checkSend();
+
+                    if (count($recipients) === 0) {
+                        throw new Exception([
+                            'key' => 'dvll.newsletterNoRecipients',
+                            'fallback' => 'Keine validen Empfänger gefunden.',
+                            'httpCode' => 400,
+                        ]);
+                    }
+
                     return [
                         'success' => true,
                         'data' => array_map(function ($recipient) {

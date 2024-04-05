@@ -5,33 +5,11 @@ use dvll\Newsletter\Classes\NewsletterService;
 use Kirby\Cms\Page;
 use Kirby\Exception\Exception;
 use Kirby\Data\Data;
+use Kirby\Toolkit\A;
 use Kirby\Toolkit\Str;
 
 class NewsletterPage extends Page
 {
-    private const EMAIL_FROM = 'vorstand@cvjm-stift-quernheim.de';
-    private const EMAIL_FROM_NAME = 'CVJM Stift Quernheim e.V.';
-
-    /**
-     * Summary of trackingUrl
-     * @param string $cid
-     * @param bool $test
-     * @return string
-     */
-    private function trackingUrl($cid = null, $test = false): string
-    {
-        $pageName = urlencode($test ? "https://cvjm-stift-quernheim.de/email-opened-testmail/" : "https://cvjm-stift-quernheim.de/email-opened/");
-        $newsletterName = urlencode($this->slug());
-        $websiteId = "1";
-        $campaignName = urlencode($test ? "emailing-newsletter-test" : "emailing-newsletter");
-        $src = "https://statistik.cvsq.de/matomo.php?idsite={$websiteId}&rec=1&bots=1&url={$pageName}{$newsletterName}&action_name=Email%20opened&mtm_campaign={$campaignName}&mtm_keyword={$newsletterName}";
-
-        if ($cid) {
-            $src .= "&cid={$cid}";
-        }
-
-        return $src;
-    }
 
     /**
      * Summary of logoSrc
@@ -63,9 +41,14 @@ class NewsletterPage extends Page
      * @param string $email
      * @return array<string, string>
      */
-    public function templateData($firstName = 'Du', $name = '', $email = 'mail@exmaple.com') {
+    public function templateData($firstName = null, $name = '', $email = 'mail@exmaple.com') {
+
+        if ($firstName == null && $userName = $this->getUserFirstName()) {
+            $firstName = $userName;
+        }
+
         return [
-            'vorname' => $firstName,
+            'vorname' => $firstName ?? 'Du',
             'nachname' => $name,
             'email' => $email,
         ];
@@ -96,18 +79,15 @@ class NewsletterPage extends Page
 
     /**
      * @param bool $test
+     * @param string|null $email
      * @throws \Kirby\Exception\Exception
-     * @return array{successfulDelivery: int, errorDelivery: int, message: string}
+     * @return array{successfulDelivery: int, errorDelivery: int, message: string, results: mixed}
      */
-    public function sendNewsletter(bool $test = false)
+    public function sendNewsletter(bool $test = false, string|null $email = null)
     {
+        $this->validateNewsletterFields();
 
-        $recipients = $this->getRecipients($test);
-
-        $from = new \Kirby\Cms\User([
-            'email' => self::EMAIL_FROM,
-            'name' => self::EMAIL_FROM_NAME,
-        ]);
+        $recipients = $this->getRecipientsOrError($test, $email);
 
         $log = '';
 
@@ -115,7 +95,7 @@ class NewsletterPage extends Page
         $message = $this->content()->get('message')->toBlocks();
         $subject = $test ? '[Test] ' . $this->content->get('subject') : $this->content->get('subject');
 
-        $results = [];
+        $newResults = [];
 
         try {
             foreach ($recipients as $recipient) {
@@ -124,13 +104,14 @@ class NewsletterPage extends Page
                 $name = $recipient['name'];
                 $trackingUrl = $this->trackingUrl(bin2hex(random_bytes(8)), $test);
 
-                $results[] = NewsletterService::sendSingleMail($this, $from, $to, $subject, $message, $firstName, $name, $this->files()->data(), $trackingUrl);
+                $newResults[] = NewsletterService::sendSingleMail($this, $to, $subject, $message, $firstName, $name, $this->files()->data(), $trackingUrl);
             }
         } catch (\Exception $e) {
             $log = $e->getMessage();
+
             $this->update([
                 'log' => $log,
-                'results' => Data::encode($results, 'yaml'),
+                'results' => Data::encode($newResults, 'yaml'),
             ]);
             throw new Exception([
                 'key' => 'dvll.newsletterSendFailure',
@@ -142,22 +123,13 @@ class NewsletterPage extends Page
             ]);
         }
 
-        $resultsSuccessful = array_filter($results, function ($result) {
+        $resultsSuccessful = array_filter($newResults, function ($result) {
             return $result['status'] === 'sent';
         });
-        $resultsWithError = array_filter($results, function ($result) {
+        $resultsWithError = array_filter($newResults, function ($result) {
             return $result['status'] === 'error';
         });
 
-        if (!$test && count($resultsSuccessful) > 0) {
-            // Update page with log and results
-            $page = $this->convertTo('newsletter-sent');
-            $page = $page->changeStatus('listed');
-            $page = $page->update([
-                'log' => $log,
-                'results' => Data::encode($results, 'yaml'),
-            ]);
-        }
         if (count($resultsSuccessful) <= 0) {
             $this->update([
                 'log' => $log,
@@ -175,102 +147,48 @@ class NewsletterPage extends Page
             ]);
         }
 
-        return [
+        $returnValue = [
             'successfulDelivery' => count($resultsSuccessful),
             'errorDelivery' => count($resultsWithError),
-            'message' => $log
+            'message' => $log,
+            'results' => $newResults,
         ];
-    }
 
-    public function sendSingle($email) {
-        $this->validateNewsletterFields();
-
-        $recipients = $this->getSubscribers(
-            explode(',', $this->content()->get('audience'))
-        );
-
-        $recipient = array_filter($recipients, function($recipient) use ($email) {
-            return $recipient['email'] == $email;
-        });
-
-        // Reset array keys
-        $recipient = array_values($recipient);
-
-        // Check if recipient was found
-        if (empty($recipient)) {
-            throw new Exception([
-                'key' => 'dvll.newsletterRecipientNotFound',
-                'httpCode' => 400,
-                'fallback' => 'Der Empfänger scheint nicht Teil des aktuellen newsletters zu sein.'
-            ]);
+        if ($test) {
+            return $returnValue;
         }
 
-        // Get the first (and only) recipient
-        $recipient = $recipient[0];
+        $results = [];
+        $page = $this;
+        if ($this->intendedTemplate() == 'newsletter-sent') {
+            $existingResults = $this->content()->get('results')->yaml();
 
-        $from = new \Kirby\Cms\User([
-            'email' => self::EMAIL_FROM,
-            'name' => self::EMAIL_FROM_NAME,
-        ]);
+            // add items from newResults to existingResults or replace if email is the same
+            foreach ($existingResults as $existingResult) {
+                $newResult = array_filter($newResults, function ($newResult) use ($existingResult) {
+                    return $newResult['email'] == $existingResult['email'];
+                });
 
-        $log = '';
+                $newResult = array_values($newResult);
 
-        // @phpstan-ignore-next-line
-        $message = $this->content()->get('message')->toBlocks();
-        $subject = $this->content->get('subject');
-
-        $to = $recipient['email'] ;
-        $firstName = $recipient['firstname'];
-        $name = $recipient['name'];
-        $trackingUrl = $this->trackingUrl(bin2hex(random_bytes(8)));
-
-        $results = $this->content()->get('results')->yaml();
-
-        try {
-            $newResult = NewsletterService::sendSingleMail($this, $from, $to, $subject, $message, $firstName, $name, [], $trackingUrl);
-        } catch (\Exception $e) {
-            $log = $e->getMessage();
-            $this->update([
-                'log' => $log,
-            ]);
-            throw new Exception([
-                'key' => 'dvll.newsletterSendFailure',
-                'fallback' => 'Fehler beim Versenden der Nachricht',
-                'httpCode' => 500,
-                'details' => [
-                    $e->getMessage()
-                ]
-            ]);
-        }
-
-        // update single entry of array $results with email = $to
-        $results = array_map(function ($result) use ($to, $newResult) {
-            if ($result['email'] == $to) {
-                return $newResult;
+                if (empty($newResult)) {
+                    $results[] = $existingResult;
+                } else {
+                    $results[] = $newResult[0];
+                }
             }
-            return $result;
-        }, $results);
+        } else {
+            $page = $page->convertTo('newsletter-sent');
+            $page = $page->changeStatus('listed');
+            $results = $newResults;
+        }
 
-        $this->update([
+        $page = $page->update([
             'log' => $log,
             'results' => Data::encode($results, 'yaml'),
         ]);
 
-        if ($newResult['status'] == 'error') {
-            throw new Exception([
-                'key' => 'dvll.newsletterSendFailure',
-                'fallback' => 'Fehler beim Versenden der Nachricht',
-                'httpCode' => 500,
-                'details' => [
-                    [
-                        'label' => $newResult['email'],
-                        'message' => $newResult['info']
-                    ]
-                ]
-            ]);
-        }
-
-        return $newResult;
+        return $returnValue;
     }
 
     public function validateNewsletterFields()
@@ -290,40 +208,126 @@ class NewsletterPage extends Page
 
     /**
      * @param bool $test
+     * @return array{id: number, categories: string, email: string, firstname: string, name: string}
+     */
+    public function checkSend($test = false) {
+        $this->validateNewsletterFields();
+
+        return $this->getRecipientsOrError($test);
+    }
+
+    /**
+     * @param bool $test
+     * @param string|null $email
      * @throws \Kirby\Exception\Exception
      * @return array{id: number, categories: string, email: string, firstname: string, name: string}
      */
-    public function getRecipients(bool $test = false)
-    {
-        $this->validateNewsletterFields();
+    public function getRecipientsOrError(bool $test = false, string|null $email = null) {
+        $recipients = $this->getRecipients($test, $email);
 
+        if (count($recipients) === 0) {
+            throw new Exception([
+                'key' => 'dvll.newsletterNoRecipients',
+                'fallback' => 'Keine validen Empfänger gefunden.',
+                'httpCode' => 400,
+            ]);
+        }
+
+        return $recipients;
+    }
+
+    /**
+     * @param bool $test
+     * @param string|null $email
+     * @throws \Kirby\Exception\Exception
+     * @return array{id: number, categories: string, email: string, firstname: string, name: string}
+     */
+    private function getRecipients(bool $test = false, string|null $email = null)
+    {
         if ($test) {
             if (($testRecipientsString = $this->content()->get('testRecipients')) != '') {
-                $recipients = array_map(function ($email) {
+                $recipients = array_map(function ($testEmail) {
                     return [
-                        'email' => $email,
-                        'firstname' => 'Test-Vorname',
+                        'email' => $testEmail,
+                        'firstname' => $this->getUserFirstName() ?? 'Du',
                         'name' => 'Test-Nachname'
                     ];
                 }, explode(',', $testRecipientsString));
             } else {
                 $recipients = [];
             }
-        } else {
-            $recipients = $this->getSubscribers(
-                explode(',', $this->content()->get('audience'))
-            );
+            return $recipients;
         }
 
-        if (count($recipients) === 0) {
-            throw new Exception([
-                'key' => 'dvll.newsletterNoRecipients',
-                'fallback' => $test ? 'Keine Test-Empfänger eingetragen' : 'Keine Empfänger gefunden',
-                'httpCode' => 400,
-            ]);
+        $recipients = $this->getSubscribers(
+            explode(',', $this->content()->get('audience'))
+        );
+
+        if ($this->intendedTemplate() == 'newsletter-sent') {
+            $results = $this->content()->get('results')->yaml();
+            $resultsWithErrors = A::filter($results, function ($result) {
+                return A::get($result, 'status') == 'error';
+            });
+            $recipients = A::filter($recipients, function ($recipient) use ($resultsWithErrors) {
+                return A::filter($resultsWithErrors, function ($result) use ($recipient) {
+                    return A::get($result, 'email') ==  A::get($recipient, 'email');
+                });
+            });
         }
 
+        if (!$email) {
+            return $recipients;
+        }
+
+        $recipientWithEmail = A::filter($recipients, function ($recipient) use ($email) {
+            return $recipient['email'] == $email;
+        });
+
+        // Reset array keys
+        $recipientWithEmail = array_values($recipientWithEmail);
+
+        // Check if recipient was found
+        if (empty($recipientWithEmail)) {
+            return [];
+        }
+
+        // Get the first (and only) recipient
+        $recipients = [];
+        $recipients[] = $recipientWithEmail[0];
         return $recipients;
+    }
+
+    /**
+     * Summary of trackingUrl
+     * @param string $cid
+     * @param bool $test
+     * @return string
+     */
+    private function trackingUrl($cid = null, $test = false): string
+    {
+        $pageName = urlencode($test ? "https://cvjm-stift-quernheim.de/email-opened-testmail/" : "https://cvjm-stift-quernheim.de/email-opened/");
+        $newsletterName = urlencode($this->slug());
+        $websiteId = "1";
+        $campaignName = urlencode($test ? "emailing-newsletter-test" : "emailing-newsletter");
+        $src = "https://statistik.cvsq.de/matomo.php?idsite={$websiteId}&rec=1&bots=1&url={$pageName}{$newsletterName}&action_name=Email%20opened&mtm_campaign={$campaignName}&mtm_keyword={$newsletterName}";
+
+        if ($cid) {
+            $src .= "&cid={$cid}";
+        }
+
+        return $src;
+    }
+
+    /**
+     * @return string|null
+     */
+    private function getUserFirstName() {
+        $user = kirby()->user();
+        if ($user) {
+            $userName = $user->name()->value();
+            return explode(' ', $userName)[0];
+        }
+        return null;
     }
 
 }

@@ -1,5 +1,13 @@
 <template>
   <div style="margin-block: 2rem;">
+    <k-bar>
+      <k-button-group>
+        <k-button @click="resendWithError" variant="filled" :disabled="!canSendAll"
+          :icon="isSendingAll ? 'loader' : 'refresh'">
+          Fehlgeschlagene E-Mails erneut senden
+        </k-button>
+      </k-button-group>
+    </k-bar>
     <k-stats style="margin-top: 1rem;" :reports="[
       {
         value: successReportsLength || '0',
@@ -62,6 +70,9 @@ export default {
     };
   },
   computed: {
+    canSendAll() {
+      return this.reports.filter( r => r.status === 'error').length > 0;
+    },
     errorReportsLength() {
       return this.reports.filter(report => ['error', 'sending'].includes(report.status)).length;
     },
@@ -105,6 +116,58 @@ export default {
                 status,
                 statusicon,
                 info,
+              }
+            }
+            return report;
+          });
+        })
+        .catch(error => {
+          console.error(error);
+          this.$panel.notification.error(error);
+
+          this.reports = this.reports.map(report => {
+            if (report.email === email) {
+              return {
+                ...report,
+                status: 'error',
+                statusicon: '❌',
+                info: error.details[0]?.message ?? error.message,
+              }
+            }
+            return report;
+          });
+        })
+    },
+    resendWithError() {
+      this.reports = this.reports.map(report => {
+        if (report.status === 'error') {
+          return {
+            ...report,
+            status: 'sending',
+            statusicon: '📤',
+            info: 'Wird gesendet...',
+          }
+        }
+        return report;
+      });
+      return this.$api.post(`${this.id}/send-with-errors`)
+        .then(response => {
+          this.$panel.notification.success(`E-Mails wurden erfolgreich versendet.`);
+
+          // const {
+          //   status,
+          //   statusicon,
+          //   info,
+          // } = response.data;
+
+          const newReports = response.data;
+
+          this.reports = this.reports.map(report => {
+            const newReport = newReports.find(r => r.email === report.email);
+            if (newReport) {
+              return {
+                ...report,
+                ...newReport,
               }
             }
             return report;

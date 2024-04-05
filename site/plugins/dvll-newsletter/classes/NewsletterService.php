@@ -8,10 +8,12 @@ use PHPMailer\PHPMailer\PHPMailer;
 class NewsletterService
 {
 
+    private const EMAIL_FROM = 'vorstand@cvjm-stift-quernheim.de';
+    private const EMAIL_FROM_NAME = 'CVJM Stift Quernheim e.V.';
+
     /**
      * Summary of sendSingleMail
      * @param NewsletterPage $pageModel
-     * @param \Kirby\Cms\User $from
      * @param string $to
      * @param string $subject
      * @param \Kirby\Cms\Blocks $message
@@ -22,8 +24,13 @@ class NewsletterService
      * @throws \Kirby\Exception\NotFoundException
      * @return array{email: string, status: string, statusicon: string, info: string, name: string}
      */
-    public static function sendSingleMail($pageModel, $from, string $to, string $subject, $message, string $firstName, string $name, array $attachments = [], $trackingUrl = null): array
+    public static function sendSingleMail($pageModel, string $to, string $subject, $message, string $firstName, string $name, array $attachments = [], $trackingUrl = null): array
     {
+
+        $from = new \Kirby\Cms\User([
+            'email' => self::EMAIL_FROM,
+            'name' => self::EMAIL_FROM_NAME,
+        ]);
 
         try {
             kirby()->email([
