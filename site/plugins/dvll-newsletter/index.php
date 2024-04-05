@@ -46,6 +46,7 @@ App::plugin('dvll/newsletter', [
     ],
     'templates' => [
         'newsletter' => __DIR__ . '/templates/newsletter-mail.html.php',
+        'newsletter-sent' => __DIR__ . '/templates/newsletter-mail.html.php',
         // 'newsletters' => __DIR__ . '/templates/newsletter-mail.html.php',
         // 'newsletter-sent' => __DIR__ . '/templates/newsletter.php',
         # mail
