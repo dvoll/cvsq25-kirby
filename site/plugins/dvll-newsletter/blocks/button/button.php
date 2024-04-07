@@ -1,4 +1,6 @@
-<?php ?>
+<?php
+/** @var \Kirby\Cms\Block $block */
+?>
 <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
     <tr>
         <td style="padding: 5px 20px 10px 20px;">

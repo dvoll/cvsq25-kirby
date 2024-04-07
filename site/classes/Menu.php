@@ -29,6 +29,7 @@ use Kirby\Cms\Page;
  */
 class Menu
 {
+    /** @var array{label: string, link: string, current: mixed}[] */
     public static array $pages = [];
 
     public static string $path;
@@ -38,6 +39,14 @@ class Menu
         return static::$path ??= App::instance()->request()->path()->toString();
     }
 
+    /**
+     *
+     * @param string $label
+     * @param string $icon
+     * @param string|Page $link
+     * @param Closure|bool $current
+     * @return array{current: Closure|bool, label?: string, icon?: string}[]
+     */
     public static function page(string $label = null, string $icon = null, string|Page $link = null, Closure|bool $current = null): array
     {
         if ($link instanceof Page) {
@@ -63,6 +72,11 @@ class Menu
         return static::$pages[] = $data;
     }
 
+    /**
+     * @param string|null $label
+     * @param string|null $icon
+     * @return array{current: Closure|bool, label?: string, icon?: string}[]
+     */
     public static function site(string $label = null, string $icon = null): array
     {
         $data = [

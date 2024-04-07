@@ -1,0 +1,32 @@
+parameters:
+  level: 6
+  checkAlwaysTrueCheckTypeFunctionCall: false
+  paths:
+    - site
+  excludePaths:
+    - vendor/*
+    - site/plugins/*/vendor/*
+    - site/plugins/kirby-seo/*
+    - site/plugins/kirby-vite/*
+
+  ignoreErrors:
+    -
+      message: '#Variable \$(slot) might not be defined.#'
+      paths:
+        - site/snippets
+        - site/templates
+        - site/plugins/dvll-newsletter/blocks
+        - site/plugins/dvll-newsletter/snippets
+        - site/plugins/dvll-newsletter/templates
+    -
+      message: '#Function vite not found.#'
+    -
+      message: '#Call to an undefined method Kirby\CLI\CLI::info\(\).#'
+    -
+      message: '#Call to an undefined method Kirby\\Cms\\Block *.#'
+      paths:
+        - site/snippets
+        - site/templates
+        - site/plugins/dvll-newsletter/blocks
+        - site/plugins/dvll-newsletter/snippets
+        - site/plugins/dvll-newsletter/templates

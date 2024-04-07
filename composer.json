@@ -17,7 +17,7 @@
     ],
     "minimum-stability": "stable",
     "require": {
-        "php": ">=8.3.0",
+        "php": ">=8.1.2",
         "getkirby/cms": "^4.1",
         "getkirby/cli": "^1.2",
         "arnoson/kirby-vite": "^5.3",

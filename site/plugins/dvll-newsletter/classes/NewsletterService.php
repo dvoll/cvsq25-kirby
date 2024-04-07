@@ -16,7 +16,6 @@ class NewsletterService
      * @param NewsletterPage $pageModel
      * @param string $to
      * @param string $subject
-     * @param \Kirby\Cms\Blocks $message
      * @param string $firstName
      * @param string $name
      * @param array<mixed> $attachments
@@ -24,7 +23,7 @@ class NewsletterService
      * @throws \Kirby\Exception\NotFoundException
      * @return array{email: string, status: string, statusicon: string, info: string, name: string}
      */
-    public static function sendSingleMail($pageModel, string $to, string $subject, $message, string $firstName, string $name, array $attachments = [], $trackingUrl = null): array
+    public static function sendSingleMail($pageModel, string $to, string $subject, string $firstName, string $name, array $attachments = [], $trackingUrl = null): array
     {
 
         $from = new \Kirby\Cms\User([

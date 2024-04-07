@@ -19,17 +19,17 @@
 
 use Kirby\CLI\CLI;
 use Kirby\Cms\Page;
-use Kirby\Filesystem\F;
 
 return [
     'description' => 'Scaffold kirby',
     'args' => [],
     'command' => static function (CLI $cli): void {
         kirby()->impersonate('kirby');
-        $root = kirby()->roots()->base();
+        // @phpstan-ignore-next-line
         $cli->info('Scaffolding kirby-baukasten...');
 
         if (!page('home')) {
+            // @phpstan-ignore-next-line
             $cli->info('Creating empty home page...');
             $page = Page::create([
                 'slug' => 'home',
@@ -40,6 +40,7 @@ return [
         }
 
         if (!page('error')) {
+            // @phpstan-ignore-next-line
             $cli->info('Creating empty error page...');
             $page = Page::create([
                 'slug' => 'error',
@@ -49,6 +50,7 @@ return [
         }
 
         if (!page('images')) {
+            // @phpstan-ignore-next-line
             $cli->info('Creating images page...');
             $page = Page::create([
                 'slug' => 'images',
@@ -61,6 +63,7 @@ return [
         }
 
         if (!page('newsletters')) {
+            // @phpstan-ignore-next-line
             $cli->info('Creating newsletters page...');
             $page = Page::create([
                 'slug' => 'newsletters',
@@ -69,6 +72,7 @@ return [
             $page->changeStatus('unlisted');
         }
 
+        // @phpstan-ignore-next-line
         $cli->info('Scaffolding done!');
     }
 ];

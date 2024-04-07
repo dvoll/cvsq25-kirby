@@ -1,3 +1,8 @@
+<?php
+/** @var dvll\Newsletter\PageModels\NewsletterPage $page */
+/** @var string|null $trackingUrl */
+
+?>
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
     xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -329,7 +334,7 @@
 
                         <?php /** @var \dvll\Newsletter\PageModels\NewsletterPage $page */ ?>
                         <? foreach ($page->content()->get('message')->toBlocks() as $block): ?>
-                            <?php snippet('blocks/' . $block->type(), [
+                            <? snippet('blocks/' . $block->type(), [
                                 'block' => $block,
                                 'templateData' => $recipientTemplateData ?? $page->templateData(),
                             ]) ?>

@@ -1,4 +1,9 @@
 <?php
+/** @var \Kirby\Cms\Block $block */
+/** @var dvll\Newsletter\PageModels\NewsletterPage $parent */
+
+$parent = $block->parent();
+
 $fontSize = 20;
 $fontWeight = 'normal';
 switch ($block->level()) {
@@ -19,7 +24,7 @@ switch ($block->level()) {
         <td style="padding-left: 20px; padding-right: 20px; padding-top: 20px;">
             <?php /** @var \Kirby\Cms\Block $block */ ?>
             <<?= $level = $block->level()->or('h2') ?> style="margin: 0 0 10px 0; font-family: sans-serif; font-size: <?= $fontSize ?>px; line-height: <?= $fontSize + 5 ?>px; color: #333333; font-weight: <?= $fontWeight ?>;" >
-                <?= $block->parent()->textWithTemplate($block->text(), $templateData ?? []) ?>
+                <?= $parent->textWithTemplate($block->text(), $templateData ?? []) ?>
             </<?= $level ?>>
         </td>
     </tr>

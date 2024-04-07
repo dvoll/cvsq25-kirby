@@ -1,5 +1,7 @@
 <?php
 
+/** @var Kirby\Cms\Section $this */
+
 return [
     'props' => [
         'status' => function () {

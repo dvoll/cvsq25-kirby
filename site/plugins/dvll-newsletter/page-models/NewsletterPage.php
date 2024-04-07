@@ -63,8 +63,7 @@ class NewsletterPage extends Page
         $filteredList = [];
         /** @var \Kirby\Content\Field $subscriberField */
         $subscriberField = $this->parent()->content()->get('subscribers');
-        // @phpstan-ignore-next-line
-        $allSubscriber = $subscriberField->yaml();
+        $allSubscriber = $subscriberField->__call('yaml');
         foreach ($allSubscriber as $item) {
             $itemCategories = $item['categories'];
             $itemCategoryIds = array_map('trim', explode(',', $itemCategories));
@@ -91,8 +90,6 @@ class NewsletterPage extends Page
 
         $log = '';
 
-        // @phpstan-ignore-next-line
-        $message = $this->content()->get('message')->toBlocks();
         $subject = $test ? '[Test] ' . $this->content->get('subject') : $this->content->get('subject');
 
         $newResults = [];
@@ -104,7 +101,15 @@ class NewsletterPage extends Page
                 $name = $recipient['name'];
                 $trackingUrl = $this->trackingUrl(bin2hex(random_bytes(8)), $test);
 
-                $newResults[] = NewsletterService::sendSingleMail($this, $to, $subject, $message, $firstName, $name, $this->files()->data(), $trackingUrl);
+                $newResults[] = NewsletterService::sendSingleMail(
+                    pageModel: $this,
+                    to: $to,
+                    subject: $subject,
+                    firstName: $firstName,
+                    name: $name,
+                    attachments: $this->files()->data(),
+                    trackingUrl: $trackingUrl
+                );
             }
         } catch (\Exception $e) {
             $log = $e->getMessage();
@@ -161,7 +166,8 @@ class NewsletterPage extends Page
         $results = [];
         $page = $this;
         if ($this->intendedTemplate() == 'newsletter-sent') {
-            $existingResults = $this->content()->get('results')->yaml();
+            /** @var array{name: string, email: string, status: string, info: string}[] */
+            $existingResults = $this->content()->get('results')->__call('yaml');
 
             // add items from newResults to existingResults or replace if email is the same
             foreach ($existingResults as $existingResult) {
@@ -191,7 +197,10 @@ class NewsletterPage extends Page
         return $returnValue;
     }
 
-    public function validateNewsletterFields()
+    /**
+     * @throws \Kirby\Exception\Exception
+     */
+    public function validateNewsletterFields(): void
     {
         $errors = $this->errors();
 
@@ -208,7 +217,7 @@ class NewsletterPage extends Page
 
     /**
      * @param bool $test
-     * @return array{id: number, categories: string, email: string, firstname: string, name: string}
+     * @return array{id: number, categories: string, email: string, firstname: string, name: string}[]
      */
     public function checkSend($test = false) {
         $this->validateNewsletterFields();
@@ -220,12 +229,12 @@ class NewsletterPage extends Page
      * @param bool $test
      * @param string|null $email
      * @throws \Kirby\Exception\Exception
-     * @return array{id: number, categories: string, email: string, firstname: string, name: string}
+     * @return array{id?: number, categories?: string, email: string, firstname: string, name: string}[]
      */
     public function getRecipientsOrError(bool $test = false, string|null $email = null) {
         $recipients = $this->getRecipients($test, $email);
 
-        if (count($recipients) === 0) {
+        if (count($recipients) == 0) {
             throw new Exception([
                 'key' => 'dvll.newsletterNoRecipients',
                 'fallback' => 'Keine validen Empfänger gefunden.',
@@ -240,7 +249,7 @@ class NewsletterPage extends Page
      * @param bool $test
      * @param string|null $email
      * @throws \Kirby\Exception\Exception
-     * @return array{id: number, categories: string, email: string, firstname: string, name: string}
+     * @return array{id?: number, categories?: string, email: string, firstname: string, name: string}[]
      */
     private function getRecipients(bool $test = false, string|null $email = null)
     {
@@ -264,7 +273,8 @@ class NewsletterPage extends Page
         );
 
         if ($this->intendedTemplate() == 'newsletter-sent') {
-            $results = $this->content()->get('results')->yaml();
+            /** @var array{name: string, email: string, status: string, info: string}[] */
+            $results = $this->content()->get('results')->__call('yaml');
             $resultsWithErrors = A::filter($results, function ($result) {
                 return A::get($result, 'status') == 'error';
             });

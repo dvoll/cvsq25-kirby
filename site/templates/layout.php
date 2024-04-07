@@ -7,5 +7,5 @@
  */
 
 snippet('layout', slots: true); ?>
-<?= $page->blocks()->toBlocks() ?>
+<?= $page->content()->get('blocks')->__call('toBlocks') ?>
 <?php endsnippet() ?>
