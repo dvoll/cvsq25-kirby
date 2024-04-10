@@ -154,13 +154,7 @@ export default {
         .then(response => {
           this.$panel.notification.success(`E-Mails wurden erfolgreich versendet.`);
 
-          // const {
-          //   status,
-          //   statusicon,
-          //   info,
-          // } = response.data;
-
-          const newReports = response.data;
+          const newReports = response.data.newReports;
 
           this.reports = this.reports.map(report => {
             const newReport = newReports.find(r => r.email === report.email);
@@ -177,8 +171,13 @@ export default {
           console.error(error);
           this.$panel.notification.error(error);
 
+          if (!error.details) {
+            return;
+          }
+
           this.reports = this.reports.map(report => {
-            if (report.email === email) {
+            const reportWithError = error.details.find(error => error.label === report.email);
+            if (reportWithError) {
               return {
                 ...report,
                 status: 'error',

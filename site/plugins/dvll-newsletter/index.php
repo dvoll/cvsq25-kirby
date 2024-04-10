@@ -1,6 +1,7 @@
 <?php
 @include_once __DIR__ . '/vendor/autoload.php';
 
+use dvll\Newsletter\Classes\NewsletterService;
 use Kirby\Cms\App;
 use Kirby\Cms\Page;
 use dvll\Newsletter\PageModels\NewsletterPage;
@@ -59,7 +60,7 @@ App::plugin('dvll/newsletter', [
     ],
     'hooks' => [
         'page.duplicate:after' => function (Page $duplicatePage, Page $originalPage) {
-            if ($duplicatePage->intendedTemplate() == 'newsletter-sent') {
+            if ($originalPage->intendedTemplate() == 'newsletter-sent') {
                 $duplicatePage->changeTemplate('newsletter');
                 $duplicatePage->update([
                     'results' => '',
@@ -71,19 +72,22 @@ App::plugin('dvll/newsletter', [
     'api' => [
         'routes' => [
             [
-                'pattern' => ['newsletters/(:any)/send', 'newsletters/(:any)/send/(:num)'],
+                'pattern' => [
+                    'newsletters/(:any)/send',
+                    'newsletters/(:any)/send/(:num)',
+                    'newsletters/(:any)/send-with-errors',
+                ],
                 'method' => 'POST',
                 'action' => function (string $uid, int $test = 0) {
-                    /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
-                    $page = kirby()->page('newsletters/' . $uid);
-                    if ($page == null) {
-                        throw new Error('Seite nicht gefunden', 404);
-                    }
-                    $deliveryData = $page->sendNewsletter(boolval($test));
+                    $page = NewsletterPage::getPageWithUid($uid);
+
+                    $deliveryData = NewsletterService::sendNewsletter($page, boolval($test));
+
                     return [
                         'success' => true,
                         'message' => $test ? 'Test erfolgreich gesendet' : 'Newsletter erfolgreich gesendet',
                         'data' => $deliveryData
+                        // FIXME: data['results'] is expected by send-with-errors
                     ];
                 }
             ],
@@ -95,12 +99,10 @@ App::plugin('dvll/newsletter', [
                         throw new Error('Fehlerhafte Anfrage', 400);
                     }
 
-                    /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
-                    $page = kirby()->page('newsletters/' . $uid);
-                    if ($page == null) {
-                        throw new Error('Seite nicht gefunden', 404);
-                    }
-                    $deliveryData = $page->sendNewsletter(email: $email);
+                    $page = NewsletterPage::getPageWithUid($uid);
+
+                    $deliveryData = NewsletterService::sendNewsletter(model: $page, email: $email);
+
                     return [
                         'success' => true,
                         'message' => 'Newsletter erfolgreich gesendet',
@@ -109,41 +111,12 @@ App::plugin('dvll/newsletter', [
                 }
             ],
             [
-                'pattern' => ['newsletters/(:any)/send-with-errors'],
-                'method' => 'POST',
-                'action' => function (string $uid) {
-                    /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
-                    $page = kirby()->page('newsletters/' . $uid);
-                    if ($page == null) {
-                        throw new Error('Seite nicht gefunden', 404);
-                    }
-                    $deliveryData = $page->sendNewsletter();
-                    return [
-                        'success' => true,
-                        'message' => 'Newsletter erfolgreich gesendet',
-                        'data' => $deliveryData['results']
-                    ];
-                }
-            ],
-            [
                 'pattern' => ['newsletters/(:any)/check-send'],
                 'method' => 'GET',
                 'action' => function (string $uid) {
-                    /** @var dvll\Newsletter\PageModels\NewsletterPage $page */
-                    $page = kirby()->page('newsletters/' . $uid);
-                    if ($page == null) {
-                        throw new Error('Seite nicht gefunden', 404);
-                    }
+                    $page = NewsletterPage::getPageWithUid($uid);
 
-                    $recipients = $page->checkSend();
-
-                    if (count($recipients) === 0) {
-                        throw new Exception([
-                            'key' => 'dvll.newsletterNoRecipients',
-                            'fallback' => 'Keine validen Empfänger gefunden.',
-                            'httpCode' => 400,
-                        ]);
-                    }
+                    $recipients = NewsletterService::checkSend($page);
 
                     return [
                         'success' => true,
