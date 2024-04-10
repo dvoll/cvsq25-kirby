@@ -51,7 +51,7 @@
             <td data-mobile="true">
               <k-button v-if="item.status === 'error'" icon="refresh"
                 :aria-label="`E-Mail erneut an ${item.email} senden`" :title="`E-Mail erneut an '${item.email}' senden`"
-                @click="resendSingle(item.email)">Erneut senden</k-button>
+                @click="resendSingle(item.email)" :disabled="isSending">Erneut senden</k-button>
             </td>
           </tr>
         </tbody>
@@ -64,6 +64,7 @@
 export default {
   data() {
     return {
+      /** @type {string | undefined} */
       id: undefined,
       /** @type {{[key: string]: string}[]} */
       reports: [],
@@ -71,13 +72,19 @@ export default {
   },
   computed: {
     canSendAll() {
-      return this.reports.filter( r => r.status === 'error').length > 0;
+      return this.reports.filter(r => r.status === 'error').length > 0 && !this.isSending;
     },
     errorReportsLength() {
       return this.reports.filter(report => ['error', 'sending'].includes(report.status)).length;
     },
     successReportsLength() {
       return this.reports.filter(report => report.status === 'sent').length;
+    },
+    isSending() {
+      return this.reports.filter(r => r.status === 'sending').length > 0;
+    },
+    isSendingAll() {
+      return !this.reports.some(r => r.status === 'error') && this.reports.some(r => r.status === 'sending');
     },
   },
   created() {
