@@ -1,13 +1,13 @@
 {
-	"name": "getkirby/pluginkit",
-	"description": "Kirby Example Plugin",
+	"name": "dvll/kirby-newsletter",
+	"description": "Kirby Newsletter Plugin for the CVSQ Project",
 	"license": "MIT",
 	"type": "kirby-plugin",
 	"version": "1.0.0",
 	"authors": [
 		{
-			"name": "Your Name",
-			"email": "you@example.com"
+			"name": "Dario Voll",
+			"email": "dariovoll@gmail.com"
 		}
 	],
 	"require": {

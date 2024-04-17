@@ -4,7 +4,7 @@ use Kirby\Cms\App;
 use Kirby\Data\Yaml;
 use Kirby\Filesystem\F;
 
-App::plugin('project/extended', [
+App::plugin('dvll/sitepackage', [
 	'blueprints' => [
 		'programmatic/admin-tools' => function (App $kirby) {
 			if (($user = $kirby->user()) && $user->isAdmin()) {

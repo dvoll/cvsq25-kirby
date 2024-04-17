@@ -1,0 +1,27 @@
+{
+    "name": "dvll/sitepackage",
+    "description": "Kirby Newsletter Plugin for the CVSQ Project",
+    "license": "MIT",
+    "type": "kirby-plugin",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Dario Voll",
+            "email": "dariovoll@gmail.com"
+        }
+    ],
+    "require": {
+        "getkirby/composer-installer": "^1.2"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "getkirby/composer-installer": true
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "dvll\\Sitepackage\\": "classes"
+        }
+    }
+}

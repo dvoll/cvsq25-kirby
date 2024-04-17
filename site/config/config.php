@@ -1,7 +1,8 @@
 <?php
 
+use dvll\Sitepackage\Menu;
+
 require_once __DIR__ . '/../../vendor/vlucas/phpdotenv/src/Dotenv.php';
-require_once __DIR__ . '/../classes/Menu.php';
 
 $dotenv = Dotenv\Dotenv::createUnsafeImmutable(realpath(__DIR__ . '/../../'));
 $dotenv->load();

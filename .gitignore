@@ -86,7 +86,4 @@ cghooks.lock
 !/storage/content/.gitkeep
 /storage/.license
 
-/site/plugins/kirby-seo
-/site/plugins/kirby-vite
-
-/site/plugins/project-*/vendor/**/.*
+/site/plugins/*
