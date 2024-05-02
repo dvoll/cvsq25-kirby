@@ -313,7 +313,7 @@
                     <td style="background-color: #ffffff; padding-bottom: 30px;" class="darkmode-bg">
 
                         <?php /** @var \dvll\Newsletter\PageModels\NewsletterPage $page */ ?>
-                        <?php foreach ($page->content()->get('message')->__call('toBlocks') as $block): ?>
+                        <?php foreach ($page->message()->toBlocks() as $block): ?>
                             <?php snippet('blocks/' . $block->type(), [
                                 'block' => $block,
                                 'templateData' => $recipientTemplateData ?? $page->templateData(),

@@ -103,9 +103,10 @@ class NewsletterPage extends Page
     private function getSubscribers($categories)
     {
         $filteredList = [];
-        /** @var \Kirby\Content\Field $subscriberField */
-        $subscriberField = $this->parent()->content()->get('subscribers');
-        $allSubscriber = $subscriberField->__call('yaml');
+        /** @var NewslettersPage $parent */
+        $parent = $this->parent();
+        $subscriberField = $parent->subscribers();
+        $allSubscriber = $subscriberField->yaml();
         foreach ($allSubscriber as $item) {
             $itemCategories = $item['categories'];
             $itemCategoryIds = array_map('trim', explode(',', $itemCategories));
@@ -131,7 +132,7 @@ class NewsletterPage extends Page
 
         if ($this->intendedTemplate() == 'newsletter-sent') {
             /** @var array{name: string, email: string, status: string, info: string}[] */
-            $results = $this->content()->get('results')->__call('yaml');
+            $results = $this->results()->yaml();
             $resultsWithErrors = A::filter($results, function ($result) {
                 return A::get($result, 'status') == 'error';
             });
@@ -227,7 +228,7 @@ class NewsletterPage extends Page
      * @return array{name: string, email: string, status: string, info: string}[]
      */
     public function getMergedResults($newResults) {
-        $existingReports = $this->content()->get('results')->__call('yaml');
+        $existingReports = $this->results()->yaml();
 
         foreach ($newResults as $newResult) {
             $found = false;

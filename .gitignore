@@ -56,6 +56,9 @@ content/home/.lock
 site/logs/retour
 cghooks.lock
 
+# Typings
+# --------
+/types.php
 
 # Env
 # ---------------
