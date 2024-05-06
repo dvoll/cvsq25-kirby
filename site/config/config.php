@@ -59,8 +59,8 @@ return [
         'newsletters' => Menu::page('Newsletter', 'email', page('newsletters')),
         '-',
         'images' => Menu::page('Bilder', 'images', page('page://images')),
-        'users',
         '-',
+        'users',
         'system',
     ],
     'ready' => fn () => [
