@@ -13,8 +13,10 @@ class Helper
 
     /**
      * Get an environment variable as string or boolean with optional default value
+     * @param string|bool $default
+     * @return string|bool|void
      */
-    static function getEnv($key, $default = null)
+    static function getEnv(string $key, $default = null)
     {
         $value = getenv($key);
 

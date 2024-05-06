@@ -2,6 +2,7 @@
 /** @var \Kirby\Cms\Block $block */
 $alt = $block->alt();
 $caption = $block->caption();
+/** @var \Kirby\Cms\File[] $images */
 $images = $block->images()->toFiles();
 $crop = $block->crop()->isTrue();
 $ratio = $block->ratio()->or('auto');
@@ -43,10 +44,12 @@ switch ($ratio) {
                                     $height = $imageMaxHeight;
                                 } else {
                                     $src = $image->resize($imageMaxWidth)->url();
+                                    /** @var \Kirby\Image\Image $image */
                                     $dimensions = $image->dimensions()->fitWidthAndHeight($imageMaxWidth, 600);
                                     $width = $dimensions->width();
                                     $height = $dimensions->height();
                                 }
+                                // @phpstan-ignore-next-line
                                 $alt = $alt->or($image->alt());
                             ?>
                             <img src="<?= $src ?>" alt="<?= $alt->esc() ?>" border="0"
