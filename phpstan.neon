@@ -3,11 +3,11 @@ parameters:
   checkAlwaysTrueCheckTypeFunctionCall: false
   paths:
     - site
+    - plugins
   excludePaths:
-    - vendor/*
-    - site/plugins/*/vendor/*
-    - site/plugins/kirby-seo/*
-    - site/plugins/kirby-vite/*
+    analyse:
+        - vendor/*
+        - site/plugins/*
 
   ignoreErrors:
     -
@@ -15,18 +15,24 @@ parameters:
       paths:
         - site/snippets
         - site/templates
-        - site/plugins/dvll-newsletter/blocks
-        - site/plugins/dvll-newsletter/snippets
-        - site/plugins/dvll-newsletter/templates
+        - plugins/dvll-newsletter/blocks
+        - plugins/dvll-newsletter/snippets
+        - plugins/dvll-newsletter/templates
     -
       message: '#Function vite not found.#'
     -
-      message: '#Call to an undefined method Kirby\CLI\CLI::info\(\).#'
+      message: '#Call to an undefined method Kirby\\CLI\\CLI::info\(\).#'
     -
-      message: '#Call to an undefined method Kirby\\Cms\\Block *.#'
+      message: '#Call to an undefined method Kirby\\Cms\\Block::.*.#'
       paths:
         - site/snippets
         - site/templates
-        - site/plugins/dvll-newsletter/blocks
-        - site/plugins/dvll-newsletter/snippets
-        - site/plugins/dvll-newsletter/templates
+        - plugins/dvll-newsletter/blocks
+        - plugins/dvll-newsletter/snippets
+        - plugins/dvll-newsletter/templates
+    -
+      message: '#Call to an undefined method Kirby\\Content\\Field::.*\(\).#'
+    -
+      message: '#Call to an undefined method Kirby\\Cms\\Page::.*\(\).#'
+    -
+      message: '#Call to an undefined method dvll\\Newsletter\\PageModels\\.*\(\).#'
