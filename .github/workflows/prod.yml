@@ -19,8 +19,8 @@ jobs:
           username: ${{ secrets.DEPLOY_SSH_USER }}
           port: ${{ secrets.DEPLOY_SSH_PORT }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: "*,!docker,!.vscode,!.git,!.github,!docker-compose.yml"
-          target: ${{ secrets.DEPLOY_SSH_PATH_STAGING }}
+          source: "plugins,public,site,storage,.env.example,composer.json,composer.lock"
+          target: ${{ secrets.DEPLOY_SSH_PATH_PRODUCTION }}
       - name: Executing remote ssh command
         uses: appleboy/ssh-action@v1.0.3
         with:
